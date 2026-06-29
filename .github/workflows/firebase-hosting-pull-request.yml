@@ -13,6 +13,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
+      # 1️⃣ Setup Node.js
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # 2️⃣ Install dependencies
+      - run: npm ci
+
+      # 3️⃣ Build your project
+      - run: npm run build
+
+      # 4️⃣ Deploy Preview to Firebase
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
