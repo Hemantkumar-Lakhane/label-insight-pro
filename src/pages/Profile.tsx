@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MobileHeader } from "@/components/layout/mobile-header";
+import { MobileHeader } from "@/components/layout/MobileHeader";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -86,8 +86,6 @@ export function Profile({ onNavigate, user }: ProfileProps) {
       setIsLoading(true);
       const profile = await profileService.getProfile(user.id);
       
-      console.log('Loaded profile data:', profile); // Debug log
-      
       if (profile) {
         setFirstName(profile.first_name || "");
         setLastName(profile.last_name || "");
@@ -110,8 +108,6 @@ export function Profile({ onNavigate, user }: ProfileProps) {
           const goals = profile.nutrition_goals as any;
           setChildMode(goals.child_mode || false);
         }
-      } else {
-        console.log('No existing profile found'); // Debug log
       }
     } catch (error) {
       console.error('Error loading profile:', error);
@@ -216,8 +212,6 @@ export function Profile({ onNavigate, user }: ProfileProps) {
       onboarding_completed: true,
       updated_at: new Date().toISOString()
     };
-
-    console.log('Saving profile data:', profileData);
 
     // Use update instead of upsert to avoid the ID conflict
     await profileService.updateProfile(user.id, profileData);

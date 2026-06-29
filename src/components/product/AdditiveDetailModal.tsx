@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./dialog";
-import { Badge } from "./badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, CheckCircle2, Info, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 

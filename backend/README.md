@@ -1,6 +1,6 @@
-# NutriSense - OCR & Text Extraction Service
+# Label Insight Pro - OCR & Text Extraction Service
 
-This is the dedicated OCR backend for **NutriSense**, responsible exclusively for extracting and structuring text from food label images. It utilizes **PaddleOCR** to perform high-accuracy text detection on product packaging.
+This is the dedicated OCR backend for **Label Insight Pro** (NutriSense), responsible exclusively for extracting and structuring text from food label images. It utilizes **PaddleOCR** to perform high-accuracy text detection on product packaging.
 
 ## 🔗 Integration
 

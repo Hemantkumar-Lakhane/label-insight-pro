@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MobileHeader } from "@/components/layout/mobile-header";
+import { MobileHeader } from "@/components/layout/MobileHeader";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";

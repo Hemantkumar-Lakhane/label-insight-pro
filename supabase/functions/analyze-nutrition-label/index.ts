@@ -4,7 +4,7 @@ import { callGeminiWithFallback } from '../_shared/gemini.ts';
 
 // Configuration
 const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
-const OCR_SPACE_API_KEY = Deno.env.get('OCR_SPACE_API_KEY') || 'K83414045188957';
+const OCR_SPACE_API_KEY = Deno.env.get('OCR_SPACE_API_KEY') || '';
 // Use host.docker.internal for local Supabase -> Host communication
 const PADDLE_OCR_URL = Deno.env.get('PADDLE_OCR_URL') || 'http://host.docker.internal:8000/ocr';
 

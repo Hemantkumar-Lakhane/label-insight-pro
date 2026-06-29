@@ -13,9 +13,6 @@ logger = logging.getLogger(__name__)
 class PaddleOCRLine(BaseModel):
     text: str
     confidence: float
-    box: List[List[str]]  # Using string/float mixed types can be tricky, let's strictly define.
-                          # Actually, coordinates are floats/ints. 
-                          # Users requested [[x,y],...]
     box: List[List[float]]
 
 class PaddleOCRResponse(BaseModel):

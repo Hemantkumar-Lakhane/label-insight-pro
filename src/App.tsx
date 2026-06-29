@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
-import { BottomNavigation } from "@/components/ui/bottom-navigation";
+import { BottomNavigation } from "@/components/common/BottomNavigation";
 import { Home } from "./pages/Home";
 import { Profile } from "./pages/Profile";
 import { Scanner } from "./pages/Scanner";
@@ -14,7 +14,7 @@ import { Settings } from "./pages/Settings";
 import { Onboarding } from "./pages/Onboarding";
 import { ResetPassword } from "./pages/ResetPassword";
 import { useAuth } from "./hooks/useAuth";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { useProductAnalysis } from "./hooks/useProductAnalysis";
 import { supabase } from "@/integrations/supabase/client";
 

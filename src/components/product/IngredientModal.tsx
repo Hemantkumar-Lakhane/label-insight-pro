@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { AlertTriangle, CheckCircle, Info, Lightbulb, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { IngredientAnalysis } from "@/services/ingredientAnalysisService";

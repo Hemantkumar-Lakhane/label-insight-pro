@@ -1,7 +1,9 @@
 {
-  "name": "vite_react_shadcn_ts",
+  "name": "label-insight-pro",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Personalized AI-powered food label understanding for healthier choices at the moment of purchase.",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -51,7 +53,6 @@
     "cmdk": "^1.1.1",
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.6.0",
-    "fastapi": "^0.0.8",
     "franc-min": "^6.2.0",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.462.0",

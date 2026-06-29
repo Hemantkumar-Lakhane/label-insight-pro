@@ -7,8 +7,6 @@ type ProfileUpdate = Database['public']['Tables']['profiles']['Update'];
 
 export const profileService = {
   async getProfile(userId: string): Promise<Profile | null> {
-    console.log('Fetching profile for user:', userId);
-    
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
@@ -20,13 +18,10 @@ export const profileService = {
       throw new Error(`Failed to fetch profile: ${error.message}`);
     }
 
-    console.log('Profile fetched:', data);
     return data;
   },
 
   async upsertProfile(profile: ProfileInsert): Promise<Profile> {
-    console.log('Upserting profile:', profile);
-    
     // First, check if profile exists
     const { data: existingProfile } = await supabase
       .from('profiles')
@@ -36,7 +31,6 @@ export const profileService = {
 
     if (existingProfile) {
       // Update existing profile
-      console.log('Updating existing profile with ID:', existingProfile.id);
       const { data, error } = await supabase
         .from('profiles')
         .update({
@@ -52,11 +46,9 @@ export const profileService = {
         throw new Error(`Failed to update profile: ${error.message}`);
       }
 
-      console.log('Profile updated:', data);
       return data;
     } else {
       // Create new profile - let Supabase generate the ID
-      console.log('Creating new profile for user:', profile.user_id);
       const { data, error } = await supabase
         .from('profiles')
         .insert({
@@ -88,15 +80,12 @@ export const profileService = {
         throw new Error(`Failed to create profile: ${error.message}`);
       }
 
-      console.log('Profile created:', data);
       return data;
     }
   },
 
   // Alternative simpler approach - just use update
   async updateProfile(userId: string, updates: ProfileUpdate): Promise<Profile> {
-    console.log('Updating profile for user:', userId, 'with:', updates);
-    
     const { data, error } = await supabase
       .from('profiles')
       .update({
@@ -112,7 +101,6 @@ export const profileService = {
       throw new Error(`Failed to update profile: ${error.message}`);
     }
 
-    console.log('Profile updated:', data);
     return data;
   },
 
@@ -127,4 +115,4 @@ export const profileService = {
       return false;
     }
   }
-};
+};

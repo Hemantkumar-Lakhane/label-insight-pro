@@ -1,8 +1,8 @@
 import { cn } from "@/lib/utils";
 import { AlertTriangle, CheckCircle, Info, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
-import { Button } from "./button";
-import { Card } from "./card";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 interface OCRConfidenceBannerProps {
   confidence: number;

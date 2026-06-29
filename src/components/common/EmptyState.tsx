@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Button } from "./button";
+import { Button } from "@/components/ui/button";
 import { LucideIcon, Camera, History, Heart, Scan, Search, FileText } from "lucide-react";
 
 interface EmptyStateProps {

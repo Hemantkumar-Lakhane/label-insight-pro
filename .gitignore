@@ -1,4 +1,4 @@
-# Logs
+# Logs and build artifacts
 logs
 *.log
 npm-debug.log*
@@ -6,23 +6,52 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-
-backend-venv/
-node_modules
 dist
 dist-ssr
-*.local
+build/
 
-# Editor directories and files
-.vscode/*
+# Node dependencies
+node_modules/
+
+# Python Virtual Environments & Caches
+venv/
+.venv/
+env/
+backend-venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+
+# Local Environment Variables & Secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.backup
+.env.sample
+
+# Supabase Local Cache & State
+supabase/.temp/
+supabase/.branches/
+
+# Editor files and Operating System metadata
+.vscode/
 !.vscode/extensions.json
-.idea
-.DS_Store
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
-.env
-__pycache__/
-*.pyc
+.DS_Store
+Thumbs.db
+
+# Lock files (project standard is npm)
+bun.lock
+yarn.lock
+pnpm-lock.yaml
+

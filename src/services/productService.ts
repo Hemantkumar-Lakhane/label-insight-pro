@@ -171,7 +171,7 @@ export const productService = {
       }
       throw new Error('Backend search failed');
     } catch (error) {
-      console.log('Backend search failed, falling back to OpenFoodFacts:', error);
+      console.warn('Backend search failed, falling back to OpenFoodFacts:', error);
       
       // Fallback to OpenFoodFacts search
       try {

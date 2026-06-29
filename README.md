@@ -1,155 +1,198 @@
-# NutriSense
-Personalized AI-powered food label understanding for healthier choices at the moment of purchase.
+# 🔍 Label Insight Pro (NutriSense)
 
-## Introduction 📖
-NutriSense is an intelligent dietary assistant designed to help consumers make smarter food choices instantly. By combining OCR technology with advanced LLMs, it deciphers complex food labels and provides personalized insights based on your specific health goals and dietary restrictions. It is designed for health-conscious individuals, people with dietary restrictions (allergies, diabetes, veganism), and anyone who finds food packaging confusing. It provides critical clarity at the exact moment of purchase, helping users avoid harmful ingredients before they buy.
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](#)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-1.0.0-orange.svg)](#)
+[![React](https://img.shields.io/badge/frontend-React%20%7C%20TS%20%7C%20Vite-blue.svg)](#)
+[![FastAPI](https://img.shields.io/badge/backend-FastAPI%20%7C%20Python-darkgreen.svg)](#)
+[![Supabase](https://img.shields.io/badge/database-Supabase-green.svg)](#)
 
-## Problem Statement ⚠️
-Reading and understanding food labels is a real-world challenge.
-- **Complex Jargon:** Ingredients lists are full of chemical names, numbers, and hidden sugars that confuse the average consumer.
-- **Time Constraints:** Shoppers do not have time to research every ingredient in the aisle.
-- **Health Constraints:** For people with severe allergies or conditions like hypertension, missing one small line of text can have serious health consequences.
-- **Physical Readability:** Labels are often printed in tiny fonts on curved or reflective surfaces, making them physically hard to read.
+Personalized AI-powered food label understanding and OCR analyzer for healthier dietary choices at the moment of purchase.
 
-## Solution Overview 💡
-NutriSense solves these problems with a responsive web application optimized for mobile usage:
-- **Dual Scanning Flow:** We support both Barcode scanning (for instant database lookup) and visual OCR scanning (for extracting text from raw images of packaging).
-- **Personalized Analysis:** Unlike generic scanners, we analyze the data against *your* unique profile.
-- **Actionable Insights:** We provide a clear proprietary health score (0-100), concise summaries, and immediate alerts (e.g., "Contains Gluten").
-- **Graceful Fallback:** If one method fails (e.g. unknown barcode), the system automatically attempts visual recognition, ensuring the user is never left without an answer.
+---
 
-## Key Features ✨
-- **Barcode Scanning**: Rapid retrieval of product data using the Open Food Facts database.
-- **OCR Based Label Scanning**: Advanced text extraction for products without barcodes or with unreadable codes.
-- **Intelligent Product Identification**: AI-driven matching of OCR text to known products to enrich data.
-- **Personalized Health Analysis**: Insights are tailored to the user's specific age, gender, allergies, and health goals.
-- **Alerts & Warnings**: Prominent red flags for detected allergens or incompatible ingredients.
-- **Health Score & Explanation**: A simple, color-coded score accompanied by a natural language explanation of *why* the score was given.
-- **Alternative Suggestions**: Smart recommendations for healthier product alternatives when a scanned item scores poorly.
-- **Graceful Fallback**: A robust multi-layer system that ensures analysis is provided even when data is incomplete.
+## 📖 Introduction
+**Label Insight Pro** (NutriSense) is a smart dietary assistant designed to help consumers decipher complex, cryptic food labels instantly. By combining optical character recognition (OCR) with advanced Large Language Models (LLMs), it analyzes ingredients against a user's specific health goals, age, medical conditions, and allergies. 
 
-## System Architecture 🏗️
-The platform is built on a modern, scalable architecture:
-- **Frontend**: A high-performance React application using Vite and Tailwind CSS for a responsive user interface.
-- **Backend Services**: A dedicated Python FastAPI service handles CPU-intensive OCR tasks (PaddleOCR).
-- **LLM Layer**: Google Gemini acts as the reasoning engine to interpret ingredients and generate health insights.
-- **Data Integrations**: Seamless integration with Open Food Facts for global product data.
-- **Validation Layers**: Multiple validation steps, including RapidFuzz for string matching, ensure data accuracy and reduce hallucinations.
+Whether you have diabetes, hypertension, celiac disease, or are simply trying to eat clean, Label Insight Pro provides critical clarity in the supermarket aisle, helping you avoid harmful ingredients and find healthier alternatives.
 
-## How It Works (Step-by-Step Flow) 🔄
-1. **User Scan**: Users scan a barcode or capture a photo of the nutrition label.
-2. **OCR / Product Detection**: The system first checks the barcode; if missing, it processes the image through PaddleOCR/OCR.space.
-3. **Validation**: Extracted text is validated against known product databases to ensure accuracy.
-4. **Enrichment**: Additional nutritional data is fetched if the product is identified.
-5. **Health Analysis**: Gemini analyzes the combined data against the user's health profile.
-6. **UI Rendering**: The result is displayed as an easy-to-read scorecard with actionable advice.
+---
 
-## Tech Stack 💻
+## 🏗️ System Architecture & Data Flow
 
-**Frontend:**
-- React
-- TypeScript
-- Tailwind CSS
-- shadcn/ui
+```mermaid
+graph TD
+    User([User]) -->|Scan Barcode / Label Photo| Client[React Frontend]
+    Client -->|Barcode Lookup| OFF[Open Food Facts API]
+    Client -->|Upload Image| EdgeFunc[Supabase Edge Functions]
+    EdgeFunc -->|Fallback Engine| OCRSpace[OCR.space API]
+    EdgeFunc -->|Primary Engine| PythonBE[Python FastAPI Backend]
+    PythonBE -->|PaddleOCR Engine| Paddle[PaddleOCR Model]
+    EdgeFunc -->|Interpret Ingredients| Gemini[Google Gemini API]
+    EdgeFunc -->|Fetch Profile| SupabaseDB[(Supabase PostgreSQL)]
+    Client -->|Direct Fallback Backend Search| PythonBE
+    Client -.->|Update Profile / History| SupabaseDB
+```
 
-**Backend & APIs:**
-- FastAPI (Python)
-- Supabase Edge Functions (Deno + TypeScript)
+1. **User Scanning:** The user captures a nutrition label image or scans a barcode using their mobile web browser.
+2. **Dual Scanning Pipeline:**
+   * **Barcode path:** Looks up details in the Open Food Facts (OFF) database. If not found or if data is incomplete, visual recognition triggers automatically.
+   * **OCR path:** Processes the packaging image. The primary engine runs **PaddleOCR** on a Python FastAPI microservice. If unreachable, the system fails over to the **OCR.space API**.
+3. **Reasoning & Enrichment:** The Deno Edge Function coordinates Gemini LLMs to structure OCR text, verify claims, check for hidden sugars/additives, and generate a tailored health report.
+4. **Personalization:** Insights are cross-referenced directly with the user's Supabase profile (medical conditions, allergies, goals).
 
-**AI & OCR:**
-- Google Gemini APIs
-- PaddleOCR
-- OCR.space
+---
 
-**Data & Utilities:**
-- Supabase (PostgreSQL + Auth)
-- Open Food Facts API
-- RapidFuzz
+## ✨ Key Features
+* 📷 **Dual OCR Engines:** Combines PaddleOCR (local, fast) and OCR.space (cloud fallback) for high-accuracy text extraction on curved, shiny, or crinkled packaging.
+* 🛡️ **Allergen & Additive Red Flags:** Highlights hidden allergens (gluten, nuts, soy, dairy) and lists harmful chemical additives.
+* 📊 **Proprietary Health Score:** Computes a 0–100 score based on nutritional parameters, processing level, and ingredient quality.
+* 🥗 **Healthy Alternatives:** Recommends alternative products available in the database when a scanned item scores poorly.
+* 🤖 **Dietary AI Chatbot:** Interactive health chat assistant to ask follow-up questions about scanned items.
+* 🔄 **Graceful Degradation:** Multi-layered fallbacks ensure basic parsing is returned even during rate limits or server outages.
 
-## Project Structure 🗂️
+---
 
+## 🛠️ Tech Stack
+* **Frontend:** React, TypeScript, Vite, Tailwind CSS, shadcn/ui, Lucide React
+* **Backend:** Python 3.11, FastAPI, Pydantic, RapidFuzz, PaddleOCR, PyTesseract, Pillow
+* **Edge Layer:** Supabase Deno Edge Functions
+* **Database & Auth:** Supabase (PostgreSQL, GoTrue Auth)
+* **AI reasoning:** Google Gemini (Gemini Flash/Pro models)
+
+---
+
+## ⚙️ Environment Variables
+
+A template `.env.example` is located in the root directory. To run this project, configure the following keys:
+
+| Environment Variable | Description | Location | Required |
+| :--- | :--- | :--- | :--- |
+| `VITE_SUPABASE_URL` | Supabase Web client project connection URL | Frontend `.env` | Yes |
+| `VITE_SUPABASE_ANON_KEY` | Supabase anonymous API key | Frontend `.env` | Yes |
+| `VITE_BACKEND_URL` | Connection URL for FastAPI backend | Frontend `.env` | Yes |
+| `SUPABASE_URL` | Supabase project URL | Backend `backend/.env` | Yes |
+| `SUPABASE_ANON_KEY` | Supabase anonymous key | Backend `backend/.env` | Yes |
+| `GEMINI_API_KEY` | Google Gemini API Key | Supabase Secrets | Yes |
+| `OCR_SPACE_API_KEY` | Free key for OCR.space API fallbacks | Supabase Secrets | Optional (Fallback) |
+| `PADDLE_OCR_URL` | PaddleOCR endpoint address | Supabase Secrets | Optional (Local) |
+
+---
+
+## 🗂️ Folder Structure Overview
+
+```text
 label-insight-pro/
- ├─ src/                # React frontend
- ├─ backend/            # FastAPI OCR service
- ├─ supabase/functions/ # Edge functions (LLM & analysis)
- └─ README.md
+├── .github/workflows/   # CI/CD deployment workflows
+├── docs/
+│   └── images/          # Documentation screenshots & images
+├── src/                 # React Frontend
+│   ├── components/
+│   │   ├── common/      # App-wide shared components (Spinner, Navigation)
+│   │   ├── layout/      # Layout components (MobileHeader)
+│   │   ├── product/     # Product-specific cards, alerts, detailed modals
+│   │   └── ui/          # Generic shadcn UI atomic elements
+│   ├── config/          # Configurations & environment routers
+│   ├── context/         # React Context providers (Auth, Settings)
+│   ├── hooks/           # Custom React hooks (Barcode scanner, backend health)
+│   ├── integrations/    # Supabase Client & Database types
+│   ├── pages/           # View layouts (Home, History, Scanner, Results, Profile)
+│   ├── services/        # Service modules (OCR, OFF, Recommendations, History)
+│   └── utils/           # Utility functions (Local storage, audio cues)
+├── backend/             # FastAPI OCR & data verification service
+├── supabase/
+│   ├── functions/       # Deno Edge functions (Gemini, suggestions, verify)
+│   └── migrations/      # PostgreSQL Database schemas and table migrations
+├── package.json         # Node scripts & dependency lists
+└── tsconfig.json        # TypeScript configuration settings
+```
 
-## Setup & Local Development ⚙️
+---
 
-### Frontend
+## 🚀 Setup & Local Development
+
+### 1. Prerequisites
+* **Node.js** (v18 or higher)
+* **Python 3.11**
+* **Supabase CLI** (optional, for local Edge Function testing)
+
+### 2. Frontend Installation & Startup
 ```bash
 # Clone the repository
-git clone <repository_url>
+git clone https://github.com/DevBolt07/label-insight-pro.git
 cd label-insight-pro
 
-# Install dependencies
+# Install package dependencies
 npm install
 
-# Run development server
+# Run the local Vite dev server
 npm run dev
 ```
+The client will start running at `http://localhost:5173`.
 
-### Backend OCR service
-Requires **Python 3.11**.
-
+### 3. Backend OCR Service Setup
 ```bash
-# Navigate to backend
+# Navigate to the backend directory
 cd backend
 
-# Create virtual environment
+# Initialize a Python virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Install requirements
+# Activate the virtual environment
+# Windows:
+.\venv\Scripts\activate
+# macOS/Linux:
+source venv/bin/activate
+
+# Install Python packages
 pip install -r requirements.txt
 
-# Run FastAPI server
+# Run the FastAPI server using Uvicorn
 uvicorn main:app --reload
 ```
+The backend API service will listen at `http://localhost:8000`.
 
-## Environment Variables
-To run the project, you must check the `.env` file and configure the necessary keys, specifically for **Google Gemini** and **Supabase**.
+### 4. Running Both Simultaneously
+You can start both frontend and backend dev servers with a single command from the project root:
+```bash
+npm run dev:all
+```
 
-## Live Application 🌐
-- Web App: <https://label-insight-pro.web.app/>
+---
 
-## Demo Credentials 🔐
+## 🔐 Evaluation Credentials
+If you are reviewing this project for a hackathon submission, you can access the pre-configured test profile:
+* **Demo Account Email:** `lakhanehemant@gmail.com`
+* **Demo Account Password:** `Pass123`
 
-In case sign-up/login fails during evaluation, you can use the following demo account:
+---
 
-- **Email:** lakhanehemant@gmail.com  
-- **Password:** Pass123
+## 🎥 Demo Video & Screens
+* **Project Submission Video:** [Youtube Video Link](https://youtu.be/ep9D7by4MW0?si=tIRFDuc4y9d8Mve0)
 
-> This demo account is provided only for hackathon evaluation purposes.
+### Screenshots
+<div align="center">
+  <img src="docs/images/home%20page%20hack.jpeg" width="30%" alt="Home Screen" />
+  <img src="docs/images/maggy%20barcode%20scan%20hack.jpeg" width="30%" alt="Barcode Search" />
+  <img src="docs/images/personal%20info%20hack.jpeg" width="30%" alt="Personal Info Form" />
+</div>
 
-## Demo 🎥
-- **Demo Video:** <https://youtu.be/ep9D7by4MW0?si=tIRFDuc4y9d8Mve0>
+<br />
 
-## Screenshots 📸
-![Home Page](<home page hack.jpeg>)
-![maggy barcode scan ](<maggy barcode scan hack.jpeg>)
-![personal info](<personal info hack.jpeg>)
-![alt text](<ingredients hack.jpeg>) ![alt text](<energy hack.jpeg>) ![alt text](<additives hack.jpeg>)  ![alt text](<ocr hack rice noodle.jpeg>)    ![alt text](<history hack.jpeg>)
+<div align="center">
+  <img src="docs/images/ingredients%20hack.jpeg" width="18%" alt="Ingredients Panel" />
+  <img src="docs/images/energy%20hack.jpeg" width="18%" alt="Nutritional Info" />
+  <img src="docs/images/additives%20hack.jpeg" width="18%" alt="Additive Details" />
+  <img src="docs/images/ocr%20hack%20rice%20noodle.jpeg" width="18%" alt="OCR Extraction" />
+  <img src="docs/images/history%20hack.jpeg" width="18%" alt="Scan History" />
+</div>
 
+---
 
+## 🤝 Contributing
+Contributions are welcome! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) guide to learn about development setups, coding guidelines, and submitting pull requests.
 
-## Challenges & Learnings 🧠
-- **OCR on real packaging:** Identifying text on curved, shiny, or crinkled packaging was significantly harder than digital documents. We implemented hybrid OCR engines to solve this.
-- **Inconsistent public product data:** Open databases often have missing fields. We built fallback layers to ensure potential analysis even with partial data.
-- **LLM rate limits:** We optimized our prompt engineering and token usage to stay within API limits while maintaining accuracy.
-- **Invalid JSON from LLM:** We implemented strict output parsing and retry mechanisms to handle cases where the AI returned malformed data.
-- **Reliable fallback systems:** Creating a user experience that feels seamless even when the primary data source fails was a key architectural learning.
+---
 
-## Why This Project Is Valuable 🌍
-NutriSense empowers consumers to take control of their health in a confusing marketplace. It shifts the power balance from marketing teams to the consumer, enabling safer choices for people with allergies and healthier lifestyles for everyone. It turns the complex chore of label reading into a simple, instant verification.
-
-## Disclaimer ⚠️
-NutriSense is an informational and decision-support tool only.  
-It does not provide medical advice or diagnosis.  
-Users are encouraged to consult qualified healthcare professionals for medical decisions.
-
-## Team 👥
-- Hemantkumar Lakhane
-- Tanmay Kumbhare
-- Rushikesh Shinde
-- Ira Khandelwal
+## 📄 License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
