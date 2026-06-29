@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { AlertTriangle, Shield, X } from "lucide-react";
-import { Badge } from "./badge";
+import { Badge } from "@/components/ui/badge";
 
 export interface IngredientAlert {
   id: string;

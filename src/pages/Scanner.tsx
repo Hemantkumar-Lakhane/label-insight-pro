@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from "react";
-import { MobileHeader } from "@/components/layout/mobile-header";
+import { MobileHeader } from "@/components/layout/MobileHeader";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Scan, Image, Zap, Loader2, FileText, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { BarcodeScanner } from "@/components/barcode-scanner";
-import { OCRScanner } from "@/components/ocr-scanner";
+import { BarcodeScanner } from "@/components/BarcodeScanner";
+import { OCRScanner } from "@/components/OcrScanner";
 import { openFoodFactsService } from "@/services/openFoodFacts";
 import { BarcodeScanResult } from "@/hooks/useBarcodeScanner";
 import { useToast } from "@/hooks/use-toast";
@@ -18,6 +18,7 @@ import { analyzeProductWithBackend, UserProfile } from "@/services/backendApi";
 import { useBackendHealth } from "@/hooks/useBackendHealth";
 import { useTranslation } from "@/i18n";
 import { useDebounce } from "@/hooks/useDebounce";
+import { profileService } from "@/services/profileService";
 
 interface ScannerProps {
   onNavigate: (page: string, data?: any) => void;
@@ -237,17 +238,34 @@ export function Scanner({ onNavigate, user }: ScannerProps) {
     setIsScanning(true);
 
     try {
-      try {
-        const userProfile: UserProfile = {
-          age: 30, // TODO: Fetch real profile
-          hasDiabetes: false,
-          hasHighBP: false,
-          isChild: false,
-          hasHeartDisease: false,
-          isPregnant: false,
-          allergies: [],
-        };
+      let userProfile: UserProfile = {
+        age: 30,
+        hasDiabetes: false,
+        hasHighBP: false,
+        isChild: false,
+        hasHeartDisease: false,
+        isPregnant: false,
+        allergies: [],
+      };
 
+      try {
+        const profile = await profileService.getProfile(user.id);
+        if (profile) {
+          userProfile = {
+            age: profile.age ? Number(profile.age) : 30,
+            hasDiabetes: profile.health_conditions?.includes('diabetes') || false,
+            hasHighBP: profile.health_conditions?.includes('hypertension') || false,
+            isChild: profile.age ? Number(profile.age) < 18 : false,
+            hasHeartDisease: profile.health_conditions?.includes('heart disease') || false,
+            isPregnant: profile.health_conditions?.includes('pregnancy') || false,
+            allergies: profile.allergies || [],
+          };
+        }
+      } catch (profileError) {
+        console.warn('Failed to load profile for scan, using default profile:', profileError);
+      }
+
+      try {
         const backendResult = await analyzeProductWithBackend(result.code, userProfile);
         
         const savedProduct = await productService.createOrUpdateProduct({

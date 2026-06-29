@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { Card } from "./card";
-import { Badge } from "./badge";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { AlertCircle, CheckCircle2, XCircle, TrendingUp, TrendingDown, Apple, Droplet, Package as PackageIcon, Factory, ChevronRight, AlertTriangle, Image as ImageIcon, Calendar } from "lucide-react";
 import { ProductData } from "@/services/openFoodFacts";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./tabs";
-import { IngredientDetailModal } from "./ingredient-detail-modal";
-import { AdditiveDetailModal } from "./additive-detail-modal";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { IngredientDetailModal } from "./IngredientDetailModal";
+import { AdditiveDetailModal } from "./AdditiveDetailModal";
 
 interface NutriScoreDetailedProps {
   productData: ProductData;

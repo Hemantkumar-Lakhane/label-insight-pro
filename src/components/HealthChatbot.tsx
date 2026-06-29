@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Bot, User, Lightbulb } from "lucide-react";
 import { cn } from "@/lib/utils";

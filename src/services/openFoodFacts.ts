@@ -176,7 +176,6 @@ class OpenFoodFactsService {
       // Check cache first
       const cachedProduct = productCacheStorage.get(barcode);
       if (cachedProduct) {
-        console.log('Using cached product data for:', barcode);
         return cachedProduct;
       }
 

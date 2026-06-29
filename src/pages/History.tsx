@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { MobileHeader } from "@/components/layout/mobile-header";
+import { MobileHeader } from "@/components/layout/MobileHeader";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { EmptyState } from "@/components/ui/empty-state";
+import { EmptyState } from "@/components/common/EmptyState";
 import { Search, Calendar, Filter, Camera, MoreVertical, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { User } from "@supabase/supabase-js";

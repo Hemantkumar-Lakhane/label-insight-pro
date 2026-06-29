@@ -1,4 +1,4 @@
-# NutriSense - Devfolio Submission Content
+# Label Insight Pro (NutriSense) - Devfolio Submission Content
 
 ## 🚀 The Problem it Solves
 We've all stood in a supermarket aisle, turning over a packet of chips or a "healthy" health drink, staring at the nutrition label and wondering, *"Is this actually good for me?"*

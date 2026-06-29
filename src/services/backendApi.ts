@@ -21,8 +21,6 @@ export interface AnalysisResult {
 
 export const analyzeProductWithBackend = async (barcode: string, userProfile: UserProfile): Promise<AnalysisResult> => {
   try {
-    console.log('Sending analysis request to backend...');
-    
     const response = await fetch(getBackendEndpoint('/analyze-product'), {
       method: 'POST',
       headers: {
@@ -40,7 +38,6 @@ export const analyzeProductWithBackend = async (barcode: string, userProfile: Us
     }
     
     const result = await response.json();
-    console.log('Backend analysis result received:', result);
     return result;
   } catch (error) {
     console.error('Error analyzing product with backend:', error);

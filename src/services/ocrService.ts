@@ -54,7 +54,6 @@ export interface OCRResult {
 class OCRService {
   async processImage(imageFile: File): Promise<OCRResult> {
     try {
-      console.log('Processing image with Supabase Edge Function (Gemini)...');
       const base64Image = await this.fileToBase64(imageFile);
 
       // Call the new Edge Function
@@ -64,8 +63,6 @@ class OCRService {
 
       if (error) throw new Error(`Analysis failed: ${error.message}`);
       if (!data) throw new Error('No data received from analysis');
-
-      console.log('Gemini Analysis successful:', data);
 
       // Map Gemini JSON response to your App's OCRResult format
       const rawNutritionFacts = data.nutrition_facts || data.nutritional_info || {};

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useTransition } from 'react';
-import { OcrCameraCapture } from "./ocr-camera-capture";
+import { OcrCameraCapture } from "./OcrCameraCapture";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";

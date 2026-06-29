@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
-import { Badge } from "./badge";
-import { Progress } from "./progress";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 
 interface HealthScoreCardProps {
   score: number;

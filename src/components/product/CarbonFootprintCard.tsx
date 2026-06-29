@@ -1,5 +1,5 @@
-import { Card } from "./card";
-import { Badge } from "./badge";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Leaf, Car, Plane, Home, AlertTriangle, Package } from "lucide-react";
 import { ProductData } from "@/services/openFoodFacts";

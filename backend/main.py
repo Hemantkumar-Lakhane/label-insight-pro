@@ -2,19 +2,26 @@ from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 import requests
 import re
-from typing import Dict, List, Optional
+import os
+import io
+import time
+import base64
+import logging
+from typing import Dict, List, Optional, Any
 from pydantic import BaseModel
 from PIL import Image
-import io
-import base64
-import os
 from supabase import create_client, Client
 import pytesseract
+from rapidfuzz import process, fuzz
+
 try:
     from .paddle_engine import paddle_engine, PaddleOCRResponse
 except ImportError:
     from paddle_engine import paddle_engine, PaddleOCRResponse
 
+# Setup logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s - %(message)s")
+logger = logging.getLogger("backend")
 
 # Initialize Supabase client
 supabase_url = os.getenv("SUPABASE_URL")
@@ -23,7 +30,7 @@ supabase_key = os.getenv("SUPABASE_ANON_KEY")
 if supabase_url and supabase_key:
     supabase: Client = create_client(supabase_url, supabase_key)
 else:
-    print("Warning: Supabase credentials not found. Profile features will be disabled.")
+    logger.warning("Supabase credentials not found. Profile features will be disabled.")
     supabase = None
 
 # Function to get user profile
@@ -39,10 +46,8 @@ def get_user_profile(user_id: str) -> Optional[Dict]:
             return response.data[0]
         return None
     except Exception as e:
-        print(f"Error fetching profile: {e}")
+        logger.error(f"Error fetching profile: {e}")
         return None
-
-from rapidfuzz import process, fuzz
 
 app = FastAPI()
 
@@ -164,7 +169,7 @@ def get_product_data(barcode: str) -> Optional[Dict]:
             
         return None
     except Exception as e:
-        print(f"OFF API Error: {e}")
+        logger.error(f"OFF API Error: {e}")
         return None
 
 def calculate_quality_score(product: Dict, ocr_ingredients: List[str] = None) -> Dict:
@@ -241,18 +246,18 @@ def select_best_candidate(products: List[Dict], ocr_ingredients: List[str] = Non
         return None
         
     ranked = []
-    print(f"\n--- Ranking {len(products)} Candidates ---")
+    logger.info(f"--- Ranking {len(products)} Candidates ---")
     
     for p in products:
         qs = calculate_quality_score(p, ocr_ingredients)
         ranked.append((qs['score'], p))
-        print(f"Candidate {qs['id']} ({qs['name']}) | Score: {qs['score']} | Overlap: {qs['overlap']} | details: {qs['breakdown']}")
+        logger.info(f"Candidate {qs['id']} ({qs['name']}) | Score: {qs['score']} | Overlap: {qs['overlap']} | details: {qs['breakdown']}")
         
     # Sort descending by score
     ranked.sort(key=lambda x: x[0], reverse=True)
     
     best_score, best_product = ranked[0]
-    print(f"SELECTED: {best_product.get('_id')} ({best_product.get('product_name')}) with Score: {best_score}\n")
+    logger.info(f"SELECTED: {best_product.get('_id')} ({best_product.get('product_name')}) with Score: {best_score}")
     
     return best_product
 
@@ -434,10 +439,16 @@ def get_personalized_recommendations(product_data: Dict, ingredients: List[Ingre
     
     return recommendations
 
+class ProductAnalysisRequest(BaseModel):
+    barcode: str
+    user_id: Optional[str] = None
+    user_profile: Optional[Dict[str, Any]] = None
+    health_conditions: Optional[List[str]] = None
+
 # Main endpoint to analyze product
-# Update the analyze-product endpoint to accept user_id
 @app.post("/analyze-product", response_model=ProductAnalysis)
-async def analyze_product(barcode: str, user_id: Optional[str] = None):
+async def analyze_product(request: ProductAnalysisRequest):
+    barcode = request.barcode
     # Fetch product data from Open Food Facts
     product_data = get_product_data(barcode)
     if not product_data:
@@ -455,14 +466,46 @@ async def analyze_product(barcode: str, user_id: Optional[str] = None):
     
     # Get user profile and generate personalized recommendations
     personalized_recommendations = []
-    if user_id:
-        user_profile = get_user_profile(user_id)
-        if user_profile:
-            conditions = user_profile.get('medical_conditions', [])
-            allergies = user_profile.get('allergies', [])
-            personalized_recommendations = get_personalized_recommendations(
-                product_data, ingredients, conditions, allergies
-            )
+    
+    conditions = []
+    allergies = []
+    
+    # 1) Fetch from database if user_id is provided
+    if request.user_id:
+        user_profile_db = get_user_profile(request.user_id)
+        if user_profile_db:
+            conditions = user_profile_db.get('medical_conditions', []) or user_profile_db.get('health_conditions', [])
+            allergies = user_profile_db.get('allergies', [])
+            
+    # 2) Use user_profile passed in request body
+    if not conditions and not allergies and request.user_profile:
+        prof = request.user_profile
+        if prof.get('hasDiabetes'):
+            conditions.append('diabetes')
+        if prof.get('hasHighBP'):
+            conditions.append('hypertension')
+        if prof.get('hasHeartDisease'):
+            conditions.append('heart disease')
+        if prof.get('isPregnant'):
+            conditions.append('pregnancy')
+        if prof.get('isChild'):
+            conditions.append('child')
+            
+        if 'medical_conditions' in prof:
+            conditions.extend(prof.get('medical_conditions', []))
+        elif 'health_conditions' in prof:
+            conditions.extend(prof.get('health_conditions', []))
+            
+        allergies = prof.get('allergies', [])
+        
+    # 3) Use health_conditions directly from request
+    if not conditions and request.health_conditions:
+        conditions = request.health_conditions
+        
+    if conditions or allergies:
+        personalized_recommendations = get_personalized_recommendations(
+            product_data, ingredients, conditions, allergies
+        )
     
     # Determine processing level
     nova_group = product_data.get('nova_group', 1)
@@ -620,7 +663,7 @@ def run_paddle_ocr(request: OCRRequest):
     try:
         return paddle_engine.process_base64(request.image_base64)
     except Exception as e:
-        print(f"PaddleOCR Error: {e}")
+        logger.error(f"PaddleOCR Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/")
