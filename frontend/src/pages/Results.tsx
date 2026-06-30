@@ -38,6 +38,240 @@ interface ResultsProps {
   };
 }
 
+// Traffic Light Logic
+const getTrafficLight = (value: number | undefined | null, type: 'fat' | 'saturates' | 'sugar' | 'salt') => {
+  if (value === undefined || value === null) return 'gray';
+
+  // UK FSA Guidelines per 100g
+  const limits = {
+    fat: { low: 3, high: 17.5 },
+    saturates: { low: 1.5, high: 5 },
+    sugar: { low: 5, high: 22.5 },
+    salt: { low: 0.3, high: 1.5 }
+  };
+
+  if (value <= limits[type].low) return 'green';
+  if (value > limits[type].high) return 'red';
+  return 'amber';
+};
+
+const getTrafficColor = (color: string) => {
+  if (color === 'green') return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800";
+  if (color === 'amber') return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800";
+  if (color === 'red') return "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800";
+  return "bg-muted text-muted-foreground";
+};
+
+const getTrafficLabel = (color: string) => {
+  if (color === 'green') return "Low";
+  if (color === 'amber') return "Med";
+  if (color === 'red') return "High";
+  return "-";
+};
+
+interface ProductHeroSectionProps {
+  healthScore: number;
+  productData: any;
+  isOCRResult: boolean;
+  breakdown: any[];
+  rawSum: number;
+  isClamped: boolean;
+}
+
+const ProductHeroSection: React.FC<ProductHeroSectionProps> = ({
+  healthScore,
+  productData,
+  isOCRResult,
+  breakdown,
+  rawSum,
+  isClamped
+}) => {
+  const scoreText = healthScore > 75 ? "Excellent nutritional quality" : healthScore > 50 ? "Average nutritional quality" : "Poor nutritional quality";
+  const scoreColor = healthScore > 75 ? "text-green-600" : healthScore > 50 ? "text-yellow-600" : "text-red-600";
+
+  return (
+    <div className="flex gap-4 p-4 items-center bg-card rounded-2xl shadow-sm border border-border">
+      <div className="w-24 h-24 shrink-0 bg-muted/20 rounded-xl overflow-hidden flex items-center justify-center border border-border/50">
+        {productData?.image ? (
+          <img src={productData.image} alt={productData.name} className="w-full h-full object-cover" />
+        ) : (
+          <Camera className="h-8 w-8 text-muted-foreground" />
+        )}
+      </div>
+      <div className="flex-1 space-y-1">
+        {isOCRResult ? (
+          <h2 className="text-lg font-bold">OCR Analysis</h2>
+        ) : (
+          <h2 className="text-lg font-bold leading-tight line-clamp-2">{productData?.name || "Scanned Product"}</h2>
+        )}
+        <p className="text-sm text-muted-foreground">{productData?.brand || "Brand Unknown"}</p>
+        <div className="flex gap-2 pt-1">
+          {productData?.nutriscore && productData.nutriscore !== 'unknown' && (
+            <Badge variant="outline" className={cn(
+              "uppercase font-bold",
+              getTrafficColor(productData.nutriscore.toLowerCase() === 'a' || productData.nutriscore.toLowerCase() === 'b' ? 'green' : 'amber')
+            )}>
+              {productData.nutriscore} Grade
+            </Badge>
+          )}
+          {productData?.nova_group === 4 && (
+            <Badge variant="destructive" className="bg-red-100 text-red-700 border-red-200">Ultra-Processed</Badge>
+          )}
+        </div>
+      </div>
+
+      {/* Score with Drawer Trigger */}
+      <Drawer>
+        <DrawerTrigger asChild>
+          <div className="flex flex-col items-center justify-center pl-2 border-l border-border/50 min-w-[80px] cursor-pointer hover:bg-muted/50 rounded-lg transition-colors p-1 group">
+            <AnimatedScoreBadge score={healthScore} size="lg" />
+            <div className="flex items-center gap-1 mt-1 group-hover:bg-muted/80 px-2 py-0.5 rounded-full transition-colors">
+              <Calculator className="h-3 w-3 text-muted-foreground" />
+              <span className={cn("text-[10px] font-bold leading-tight", scoreColor)}>Score</span>
+            </div>
+          </div>
+        </DrawerTrigger>
+        <DrawerContent>
+          <DrawerHeader className="text-left border-b pb-4">
+            <DrawerTitle>Score Breakdown</DrawerTitle>
+            <DrawerDescription>Transparent calculation based on nutrient profile and international standards.</DrawerDescription>
+          </DrawerHeader>
+
+          <div className="p-4 space-y-0">
+            {/* Breakdown Items */}
+            <div className="space-y-3 pb-4">
+              {breakdown.map((item, idx) => (
+                <div key={idx} className="flex justify-between items-center">
+                  <span className={cn("text-sm", item.isBase ? "font-semibold" : "text-muted-foreground")}>
+                    {item.label}
+                  </span>
+                  <span className={cn(
+                    "font-mono font-medium text-sm",
+                    item.positive ? "text-green-600" : "text-red-500"
+                  )}>
+                    {item.positive ? '+' : ''}{item.points}
+                  </span>
+                </div>
+              ))}
+              {breakdown.length === 1 && breakdown[0].isBase && (
+                <p className="text-xs text-muted-foreground italic mt-2">No negative penalties found. Good job!</p>
+              )}
+            </div>
+
+            {/* Visual Separator */}
+            <div className="border-t border-dashed border-border/60 my-2"></div>
+
+            {/* Calculated Total */}
+            <div className="flex justify-between items-center py-2 opacity-70">
+              <span className="text-sm">Calculated Sum</span>
+              <span className="font-mono text-sm">{rawSum}</span>
+            </div>
+
+            {/* Final Clamped Score (The Main Event) */}
+            <div className="flex justify-between items-center bg-muted/30 p-3 rounded-lg mt-2">
+              <span className="font-bold text-base">Final Applied Score</span>
+              <div className="flex items-center gap-2">
+                {isClamped && (
+                  <span className="text-xs text-muted-foreground italic mr-2">
+                    (Adjusted to range)
+                  </span>
+                )}
+                <Badge className={cn("text-lg px-3 py-1", scoreColor === 'text-green-600' ? "bg-green-100 text-green-700 hover:bg-green-100" : scoreColor === 'text-yellow-600' ? "bg-amber-100 text-amber-700 hover:bg-amber-100" : "bg-red-100 text-red-700 hover:bg-red-100")}>
+                  {healthScore}/100
+                </Badge>
+              </div>
+            </div>
+          </div>
+
+          <DrawerFooter className="pt-2">
+            <DrawerClose asChild>
+              <Button variant="outline">Close</Button>
+            </DrawerClose>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+    </div>
+  );
+};
+
+interface ProductVerdictCardProps {
+  healthScore: number;
+}
+
+const ProductVerdictCard: React.FC<ProductVerdictCardProps> = ({ healthScore }) => {
+  const isHealthy = healthScore > 70;
+  const isModerate = healthScore > 40 && healthScore <= 70;
+
+  return (
+    <Card className={cn(
+      "p-4 border-l-4",
+      isHealthy ? "border-l-green-500 bg-green-50/50 dark:bg-green-900/10" :
+        isModerate ? "border-l-yellow-500 bg-yellow-50/50 dark:bg-yellow-900/10" :
+          "border-l-red-500 bg-red-50/50 dark:bg-red-900/10"
+    )}>
+      <div className="flex items-start gap-3">
+        <div className={cn(
+          "p-2 rounded-full",
+          isHealthy ? "bg-green-100 text-green-600" : isModerate ? "bg-yellow-100 text-yellow-600" : "bg-red-100 text-red-600"
+        )}>
+          {isHealthy ? <CheckCircle className="h-5 w-5" /> : isModerate ? <Info className="h-5 w-5" /> : <AlertTriangle className="h-5 w-5" />}
+        </div>
+        <div>
+          <h3 className="font-semibold text-foreground">
+            {isHealthy ? "Excellent Choice!" : isModerate ? "Consume Moderately" : "Limit Consumption"}
+          </h3>
+          <p className="text-sm text-muted-foreground leading-snug mt-1">
+            {isHealthy
+              ? "This product balances nutrients well."
+              : isModerate
+                ? "Contains some processed ingredients or moderate sugar."
+                : "High in sugar, salt, or saturated fats."}
+          </p>
+        </div>
+      </div>
+    </Card>
+  );
+};
+
+interface ProductTrafficLightsProps {
+  isOCRResult: boolean;
+  productData: any;
+}
+
+const ProductTrafficLights: React.FC<ProductTrafficLightsProps> = ({ isOCRResult, productData }) => {
+  if (isOCRResult) return null;
+
+  const fats = productData?.nutritionFacts?.fat;
+  const satFats = productData?.nutritionFacts?.saturatedFat;
+  const sugars = productData?.nutritionFacts?.sugars;
+  const salt = productData?.nutritionFacts?.salt;
+
+  const items = [
+    { label: "Fat", value: fats, unit: "g", type: 'fat' as const },
+    { label: "Sat Fat", value: satFats, unit: "g", type: 'saturates' as const },
+    { label: "Sugars", value: sugars, unit: "g", type: 'sugar' as const },
+    { label: "Salt", value: salt, unit: "g", type: 'salt' as const },
+  ];
+
+  return (
+    <div className="grid grid-cols-4 gap-2">
+      {items.map((item, idx) => {
+        const color = getTrafficLight(item.value, item.type);
+        const label = getTrafficLabel(color);
+        return (
+          <div key={idx} className={cn(
+            "flex flex-col items-center justify-center p-2 rounded-xl border text-center aspect-square",
+            getTrafficColor(color)
+          )}>
+            <span className="text-[10px] uppercase font-bold opacity-70 mb-1">{item.label}</span>
+            <span className="text-xl font-black leading-none">{label}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
 export function Results({ onNavigate, user, data }: ResultsProps) {
   const [selectedIngredient, setSelectedIngredient] = useState<string | null>(null);
   const [ingredientAnalysis, setIngredientAnalysis] = useState<IngredientAnalysis | null>(null);
@@ -55,7 +289,7 @@ export function Results({ onNavigate, user, data }: ResultsProps) {
   useEffect(() => {
     let isMounted = true;
     const fetchUserProfile = async () => {
-      if (!user?.id || fullUserProfile) return; // Skip if already fetched
+      if (!user?.id) return;
       try {
         const profile = await profileService.getProfile(user.id);
         if (isMounted && profile) {
@@ -71,42 +305,11 @@ export function Results({ onNavigate, user, data }: ResultsProps) {
     };
     fetchUserProfile();
     return () => { isMounted = false; };
-  }, [user?.id]); // Only depend on user.id, not fullUserProfile
+  }, [user?.id, user?.email]); // Depend on user.id and user.email to ensure profile is fetched correctly
 
   const productData = data?.productData;
   const ocrResult = data?.ocrResult;
   const isOCRResult = data?.scanMethod === 'ocr' && ocrResult;
-
-  // Traffic Light Logic
-  const getTrafficLight = (value: number | undefined | null, type: 'fat' | 'saturates' | 'sugar' | 'salt') => {
-    if (value === undefined || value === null) return 'gray';
-
-    // UK FSA Guidelines per 100g
-    const limits = {
-      fat: { low: 3, high: 17.5 },
-      saturates: { low: 1.5, high: 5 },
-      sugar: { low: 5, high: 22.5 },
-      salt: { low: 0.3, high: 1.5 }
-    };
-
-    if (value <= limits[type].low) return 'green';
-    if (value > limits[type].high) return 'red';
-    return 'amber';
-  };
-
-  const getTrafficColor = (color: string) => {
-    if (color === 'green') return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800";
-    if (color === 'amber') return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800";
-    if (color === 'red') return "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800";
-    return "bg-muted text-muted-foreground";
-  };
-
-  const getTrafficLabel = (color: string) => {
-    if (color === 'green') return "Low";
-    if (color === 'amber') return "Med";
-    if (color === 'red') return "High";
-    return "-";
-  };
 
   // Generate alerts from product data
   const generateAlertsFromProduct = (product: ProductData): IngredientAlert[] => {
@@ -404,203 +607,9 @@ export function Results({ onNavigate, user, data }: ResultsProps) {
     );
   }
 
-  // --- Render Components Helper --- //
-
-  // 1. Hero Section
-  const renderHero = () => {
-    const scoreText = healthScore > 75 ? "Excellent nutritional quality" : healthScore > 50 ? "Average nutritional quality" : "Poor nutritional quality";
-    const scoreColor = healthScore > 75 ? "text-green-600" : healthScore > 50 ? "text-yellow-600" : "text-red-600";
-
-    // Calculation Display Logic
-    const breakdown = productData ? getScoreBreakdown(productData) : [];
-
-    // We need to replicate logic for "Sum" display so it matches calculateHealthScore's clamping
-    // However, for pure addition, we sum points.
-    const rawSum = breakdown.reduce((acc, item) => acc + item.points, 0);
-
-    // But verify clamping logic matches: 
-    // If estimation: max(20, min(95, rawSum))
-    // If grade: max(0, min(100, rawSum))
-    // Since breakdowns are additive, we just show rawSum and then the Final.
-    const isClamped = rawSum !== healthScore;
-
-    return (
-      <div className="flex gap-4 p-4 items-center bg-card rounded-2xl shadow-sm border border-border">
-        <div className="w-24 h-24 shrink-0 bg-muted/20 rounded-xl overflow-hidden flex items-center justify-center border border-border/50">
-          {productData?.image ? (
-            <img src={productData.image} alt={productData.name} className="w-full h-full object-cover" />
-          ) : (
-            <Camera className="h-8 w-8 text-muted-foreground" />
-          )}
-        </div>
-        <div className="flex-1 space-y-1">
-          {isOCRResult ? (
-            <h2 className="text-lg font-bold">OCR Analysis</h2>
-          ) : (
-            <h2 className="text-lg font-bold leading-tight line-clamp-2">{productData?.name || "Scanned Product"}</h2>
-          )}
-          <p className="text-sm text-muted-foreground">{productData?.brand || "Brand Unknown"}</p>
-          <div className="flex gap-2 pt-1">
-            {productData?.nutriscore && productData.nutriscore !== 'unknown' && (
-              <Badge variant="outline" className={cn(
-                "uppercase font-bold",
-                getTrafficColor(productData.nutriscore.toLowerCase() === 'a' || productData.nutriscore.toLowerCase() === 'b' ? 'green' : 'amber')
-              )}>
-                {productData.nutriscore} Grade
-              </Badge>
-            )}
-            {productData?.nova_group === 4 && (
-              <Badge variant="destructive" className="bg-red-100 text-red-700 border-red-200">Ultra-Processed</Badge>
-            )}
-          </div>
-        </div>
-
-        {/* Score with Drawer Trigger */}
-        <Drawer>
-          <DrawerTrigger asChild>
-            <div className="flex flex-col items-center justify-center pl-2 border-l border-border/50 min-w-[80px] cursor-pointer hover:bg-muted/50 rounded-lg transition-colors p-1 group">
-              <AnimatedScoreBadge score={healthScore} size="lg" />
-              <div className="flex items-center gap-1 mt-1 group-hover:bg-muted/80 px-2 py-0.5 rounded-full transition-colors">
-                <Calculator className="h-3 w-3 text-muted-foreground" />
-                <span className={cn("text-[10px] font-bold leading-tight", scoreColor)}>Score</span>
-              </div>
-            </div>
-          </DrawerTrigger>
-          <DrawerContent>
-            <DrawerHeader className="text-left border-b pb-4">
-              <DrawerTitle>Score Breakdown</DrawerTitle>
-              <DrawerDescription>Transparent calculation based on nutrient profile and international standards.</DrawerDescription>
-            </DrawerHeader>
-
-            <div className="p-4 space-y-0">
-              {/* Breakdown Items */}
-              <div className="space-y-3 pb-4">
-                {breakdown.map((item, idx) => (
-                  <div key={idx} className="flex justify-between items-center">
-                    <span className={cn("text-sm", item.isBase ? "font-semibold" : "text-muted-foreground")}>
-                      {item.label}
-                    </span>
-                    <span className={cn(
-                      "font-mono font-medium text-sm",
-                      item.positive ? "text-green-600" : "text-red-500"
-                    )}>
-                      {item.positive ? '+' : ''}{item.points}
-                    </span>
-                  </div>
-                ))}
-                {breakdown.length === 1 && breakdown[0].isBase && (
-                  <p className="text-xs text-muted-foreground italic mt-2">No negative penalties found. Good job!</p>
-                )}
-              </div>
-
-              {/* Visual Separator */}
-              <div className="border-t border-dashed border-border/60 my-2"></div>
-
-              {/* Calculated Total */}
-              <div className="flex justify-between items-center py-2 opacity-70">
-                <span className="text-sm">Calculated Sum</span>
-                <span className="font-mono text-sm">{rawSum}</span>
-              </div>
-
-              {/* Final Clamped Score (The Main Event) */}
-              <div className="flex justify-between items-center bg-muted/30 p-3 rounded-lg mt-2">
-                <span className="font-bold text-base">Final Applied Score</span>
-                <div className="flex items-center gap-2">
-                  {isClamped && (
-                    <span className="text-xs text-muted-foreground italic mr-2">
-                      (Adjusted to range)
-                    </span>
-                  )}
-                  <Badge className={cn("text-lg px-3 py-1", scoreColor === 'text-green-600' ? "bg-green-100 text-green-700 hover:bg-green-100" : scoreColor === 'text-yellow-600' ? "bg-amber-100 text-amber-700 hover:bg-amber-100" : "bg-red-100 text-red-700 hover:bg-red-100")}>
-                    {healthScore}/100
-                  </Badge>
-                </div>
-              </div>
-            </div>
-
-            <DrawerFooter className="pt-2">
-              <DrawerClose asChild>
-                <Button variant="outline">Close</Button>
-              </DrawerClose>
-            </DrawerFooter>
-          </DrawerContent>
-        </Drawer>
-      </div>
-    );
-  };
-
-  // 2. Verdict Card
-  const renderVerdict = () => {
-    const isHealthy = healthScore > 70;
-    const isModerate = healthScore > 40 && healthScore <= 70;
-
-    return (
-      <Card className={cn(
-        "p-4 border-l-4",
-        isHealthy ? "border-l-green-500 bg-green-50/50 dark:bg-green-900/10" :
-          isModerate ? "border-l-yellow-500 bg-yellow-50/50 dark:bg-yellow-900/10" :
-            "border-l-red-500 bg-red-50/50 dark:bg-red-900/10"
-      )}>
-        <div className="flex items-start gap-3">
-          <div className={cn(
-            "p-2 rounded-full",
-            isHealthy ? "bg-green-100 text-green-600" : isModerate ? "bg-yellow-100 text-yellow-600" : "bg-red-100 text-red-600"
-          )}>
-            {isHealthy ? <CheckCircle className="h-5 w-5" /> : isModerate ? <Info className="h-5 w-5" /> : <AlertTriangle className="h-5 w-5" />}
-          </div>
-          <div>
-            <h3 className="font-semibold text-foreground">
-              {isHealthy ? "Excellent Choice!" : isModerate ? "Consume Moderately" : "Limit Consumption"}
-            </h3>
-            <p className="text-sm text-muted-foreground leading-snug mt-1">
-              {isHealthy
-                ? "This product balances nutrients well."
-                : isModerate
-                  ? "Contains some processed ingredients or moderate sugar."
-                  : "High in sugar, salt, or saturated fats."}
-            </p>
-          </div>
-        </div>
-      </Card>
-    );
-  };
-
-  // 3. Traffic Lights
-  const renderTrafficLights = () => {
-    if (isOCRResult) return null;
-
-    // Don't default to 0. If it's undefined, it's undefined.
-    // This ensures we don't say "Low" for missing data.
-    const fats = productData?.nutritionFacts?.fat;
-    const satFats = productData?.nutritionFacts?.saturatedFat;
-    const sugars = productData?.nutritionFacts?.sugars;
-    const salt = productData?.nutritionFacts?.salt;
-
-    const items = [
-      { label: "Fat", value: fats, unit: "g", type: 'fat' as const },
-      { label: "Sat Fat", value: satFats, unit: "g", type: 'saturates' as const },
-      { label: "Sugars", value: sugars, unit: "g", type: 'sugar' as const },
-      { label: "Salt", value: salt, unit: "g", type: 'salt' as const },
-    ];
-
-    return (
-      <div className="grid grid-cols-4 gap-2">
-        {items.map((item, idx) => {
-          const color = getTrafficLight(item.value, item.type);
-          const label = getTrafficLabel(color);
-          return (
-            <div key={idx} className={cn(
-              "flex flex-col items-center justify-center p-2 rounded-xl border text-center aspect-square",
-              getTrafficColor(color)
-            )}>
-              <span className="text-[10px] uppercase font-bold opacity-70 mb-1">{item.label}</span>
-              <span className="text-xl font-black leading-none">{label}</span>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
+  const breakdown = productData ? getScoreBreakdown(productData) : [];
+  const rawSum = breakdown.reduce((acc, item) => acc + item.points, 0);
+  const isClamped = rawSum !== healthScore;
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -630,16 +639,23 @@ export function Results({ onNavigate, user, data }: ResultsProps) {
 
           {/* -- TAB 1: OVERVIEW -- */}
           <TabsContent value="overview" className="space-y-4 pt-2 animate-fade-in">
-            {renderHero()}
-            {renderVerdict()}
+            <ProductHeroSection
+              healthScore={healthScore}
+              productData={productData}
+              isOCRResult={isOCRResult}
+              breakdown={breakdown}
+              rawSum={rawSum}
+              isClamped={isClamped}
+            />
+            <ProductVerdictCard healthScore={healthScore} />
 
             <div className="space-y-2">
               <div className="flex justify-between items-center px-1">
                 <h3 className="text-sm font-semibold text-muted-foreground">Nutrient Levels</h3>
                 <span className="text-[10px] text-muted-foreground">per 100g</span>
               </div>
-              {renderTrafficLights()}
-              <p className="text-xs text-muted-foreground px-1 italic">
+              <ProductTrafficLights isOCRResult={isOCRResult} productData={productData} />
+              <p className="text-xs text-muted-foreground px-1 italic mt-1">
                 Tip: Be mindful of portion sizes. High salt intake over time increases blood pressure risk.
               </p>
             </div>
@@ -1027,6 +1043,7 @@ export function Results({ onNavigate, user, data }: ResultsProps) {
               <SheetDescription>Ask questions about this product's nutritional value and health impact.</SheetDescription>
             </SheetHeader>
             <HealthChatbot
+              key={productData?.name || ocrResult?.rawText || 'chat'}
               userProfile={fullUserProfile}
               productData={productData || ocrResult}
               className="h-full pb-10"

@@ -145,6 +145,7 @@ export const OcrCameraCapture: React.FC<OcrCameraCaptureProps> = ({ onCapture, o
                     playsInline
                     className="w-full rounded-lg bg-black"
                     style={{ aspectRatio: "4/3", maxHeight: 320 }}
+                    aria-label="Nutrition label camera feed"
                   />
                   <div className="flex gap-2 mt-4">
                     <Button onClick={handleCapture} className="flex-1">

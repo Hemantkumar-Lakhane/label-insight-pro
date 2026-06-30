@@ -40,22 +40,16 @@ export function Home({ onNavigate, user }: HomeProps) {
   const [showOCRScanner, setShowOCRScanner] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    loadRecentScans();
-    loadRecommendations();
-    loadUserProfile();
-  }, [user.id]);
-
-  const loadUserProfile = async () => {
+  const loadUserProfile = useCallback(async () => {
     try {
       const profile = await profileService.getProfile(user.id);
       setUserProfile(profile);
     } catch (error) {
       console.error('Error loading user profile:', error);
     }
-  };
+  }, [user.id]);
 
-  const loadRecentScans = async () => {
+  const loadRecentScans = useCallback(async () => {
     try {
       setIsLoading(true);
       const scans = await scanHistoryService.getRecentScans(user.id, 3);
@@ -70,9 +64,9 @@ export function Home({ onNavigate, user }: HomeProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user.id, toast]);
 
-  const loadRecommendations = async () => {
+  const loadRecommendations = useCallback(async () => {
     try {
       setIsLoadingRecs(true);
       const recs = await recommendationService.getPersonalizedRecommendations(user.id);
@@ -82,7 +76,19 @@ export function Home({ onNavigate, user }: HomeProps) {
     } finally {
       setIsLoadingRecs(false);
     }
-  };
+  }, [user.id]);
+
+  useEffect(() => {
+    let active = true;
+    if (active) {
+      loadRecentScans();
+      loadRecommendations();
+      loadUserProfile();
+    }
+    return () => {
+      active = false;
+    };
+  }, [loadRecentScans, loadRecommendations, loadUserProfile]);
 
   const handleOCRScan = () => {
     setShowOCRScanner(true);

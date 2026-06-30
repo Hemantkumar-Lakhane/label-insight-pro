@@ -30,6 +30,19 @@ export function useBarcodeScanner() {
   const codeReader = useRef<BrowserMultiFormatReader | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   
+  const stopScanning = useCallback(() => {
+    if (codeReader.current) {
+      codeReader.current.reset();
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    setIsScanning(false);
+    setError(null);
+    setTorchOn(false);
+  }, []);
+
   const startScanning = useCallback(async (
     onSuccess: (result: BarcodeScanResult) => void
   ) => {
@@ -133,7 +146,7 @@ export function useBarcodeScanner() {
       setError(err instanceof Error ? err.message : 'Failed to start camera');
       setIsScanning(false);
     }
-  }, [scanSound, scanSoundType, hapticFeedback]);
+  }, [scanSound, scanSoundType, hapticFeedback, stopScanning]);
 
   const toggleTorch = useCallback(async () => {
     if (!torchSupported || !streamRef.current) return;
@@ -148,19 +161,6 @@ export function useBarcodeScanner() {
       console.warn('Failed to toggle torch:', error);
     }
   }, [torchSupported, torchOn]);
-
-  const stopScanning = useCallback(() => {
-    if (codeReader.current) {
-      codeReader.current.reset();
-    }
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-      streamRef.current = null;
-    }
-    setIsScanning(false);
-    setError(null);
-    setTorchOn(false);
-  }, []);
 
   return {
     isScanning,

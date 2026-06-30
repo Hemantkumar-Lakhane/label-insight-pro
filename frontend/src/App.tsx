@@ -20,6 +20,32 @@ import { supabase } from "@/integrations/supabase/client";
 
 const queryClient = new QueryClient();
 
+interface CurrentPageProps {
+  currentPage: string;
+  user: any;
+  pageData: any;
+  onNavigate: (page: string, data?: any) => void;
+}
+
+const CurrentPage = ({ currentPage, user, pageData, onNavigate }: CurrentPageProps) => {
+  switch (currentPage) {
+    case "home":
+      return <Home onNavigate={onNavigate} user={user} />;
+    case "profile":
+      return <Profile onNavigate={onNavigate} user={user} />;
+    case "scan":
+      return <Scanner onNavigate={onNavigate} user={user} />;
+    case "results":
+      return <Results onNavigate={onNavigate} data={pageData} user={user} />;
+    case "history":
+      return <History onNavigate={onNavigate} user={user} />;
+    case "settings":
+      return <Settings onNavigate={onNavigate} user={user} />;
+    default:
+      return <Home onNavigate={onNavigate} user={user} />;
+  }
+};
+
 const App = () => {
   const { user, loading } = useAuth();
   const [activeTab, setActiveTab] = useState("home");
@@ -28,22 +54,22 @@ const App = () => {
   const [onboardingCompleted, setOnboardingCompleted] = useState<boolean | null>(null);
   const { analyzeProduct, loading: analysisLoading } = useProductAnalysis();
 
-  const checkOnboardingStatus = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('onboarding_completed')
-        .eq('user_id', user?.id)
-        .maybeSingle();
-      if (error) throw error;
-      setOnboardingCompleted(data?.onboarding_completed ?? false);
-    } catch (error) {
-      console.error('Error checking onboarding status:', error);
-      setOnboardingCompleted(false);
-    }
-  };
-
   useEffect(() => {
+    const checkOnboardingStatus = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('onboarding_completed')
+          .eq('user_id', user?.id)
+          .maybeSingle();
+        if (error) throw error;
+        setOnboardingCompleted(data?.onboarding_completed ?? false);
+      } catch (error) {
+        console.error('Error checking onboarding status:', error);
+        setOnboardingCompleted(false);
+      }
+    };
+
     if (user) {
       checkOnboardingStatus();
     }
@@ -102,7 +128,7 @@ const App = () => {
   };
 
   // Show loading spinner while checking authentication
-  if (loading) {
+  if (loading || onboardingCompleted === null) {
     return (
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
@@ -127,19 +153,6 @@ const App = () => {
     );
   }
 
-  // Show onboarding if not completed
-  if (onboardingCompleted === null) {
-    return (
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <div className="min-h-screen bg-background flex items-center justify-center safe-area-inset-bottom">
-            <LoadingSpinner size="lg" />
-          </div>
-        </TooltipProvider>
-      </QueryClientProvider>
-    );
-  }
-
   if (!onboardingCompleted) {
     return (
       <QueryClientProvider client={queryClient}>
@@ -152,26 +165,6 @@ const App = () => {
     );
   }
 
-  const renderCurrentPage = () => {
-    switch (currentPage) {
-      case "home":
-        return <Home onNavigate={handleNavigate} user={user} />;
-      case "profile":
-        return <Profile onNavigate={handleNavigate} user={user} />;
-      case "scan":
-        return <Scanner onNavigate={handleNavigate} user={user} />;
-      case "results":
-        return <Results onNavigate={handleNavigate} data={pageData} user={user} />;
-      case "history":
-        return <History onNavigate={handleNavigate} user={user} />;
-      case "settings":
-        return <Settings onNavigate={handleNavigate} user={user} />;
-      default:
-        return <Home onNavigate={handleNavigate} user={user} />;
-    }
-  };
-
-  // In your return statement, replace the current layout with:
 return (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -180,7 +173,7 @@ return (
       <div className="min-h-screen bg-background safe-area-inset-bottom mobile-viewport">
         {/* Main content area */}
         <div className="pb-20 min-h-screen"> {/* Reduced to pb-20 (80px) */}
-          {renderCurrentPage()}
+          <CurrentPage currentPage={currentPage} user={user} pageData={pageData} onNavigate={handleNavigate} />
         </div>
         
         {/* Bottom Navigation */}

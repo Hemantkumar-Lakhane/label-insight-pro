@@ -132,6 +132,7 @@ export function BarcodeScanner({ onScanSuccess, onClose, className }: BarcodeSca
             autoPlay
             playsInline
             muted
+            aria-label="Barcode scanner video stream"
           />
 
           {/* Scanning Overlay */}

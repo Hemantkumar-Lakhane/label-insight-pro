@@ -122,13 +122,17 @@ label-insight-pro/
 git clone https://github.com/DevBolt07/label-insight-pro.git
 cd label-insight-pro
 
-# Install package dependencies
+# Install monorepo orchestrator tools at root
 npm install
 
-# Run the local Vite dev server
+# Navigate to the frontend directory and install dependencies
+cd frontend
+npm install
+
+# Run the local Vite dev server (from the frontend folder)
 npm run dev
 ```
-The client will start running at `http://localhost:5173`.
+The client will start running at `http://localhost:8080`.
 
 ### 3. Backend OCR Service Setup
 ```bash
