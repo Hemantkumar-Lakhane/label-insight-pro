@@ -78,48 +78,48 @@ export function Profile({ onNavigate, user }: ProfileProps) {
 
   // Load profile data on component mount
   useEffect(() => {
-    loadProfile();
-  }, [user.id]);
-
-  const loadProfile = async () => {
-    try {
-      setIsLoading(true);
-      const profile = await profileService.getProfile(user.id);
-      
-      if (profile) {
-        setFirstName(profile.first_name || "");
-        setLastName(profile.last_name || "");
-        setAge(profile.age ? profile.age.toString() : "");
-        setHeight(profile.height_cm ? profile.height_cm.toString() : "");
-        setWeight(profile.weight_kg ? profile.weight_kg.toString() : "");
-        setBmi(profile.bmi || null);
-        setUserHealthConditions(profile.health_conditions || []); // Note: health_conditions not medical_conditions
-        setUserAllergies(profile.allergies || []);
-        setUserDietaryRestrictions(profile.dietary_restrictions || []);
-        setUserDietaryPreferences(profile.dietary_preferences || []);
-        setCustomHealthConditions(profile.custom_health_conditions || []);
-        setCustomAllergies(profile.custom_allergies || []);
-        setCustomDietaryPreferences(profile.custom_dietary_preferences || []);
-        setAgeGroup(profile.age_group || "");
-        setOnboardingCompleted(profile.onboarding_completed || true);
+    const loadProfile = async () => {
+      try {
+        setIsLoading(true);
+        const profile = await profileService.getProfile(user.id);
         
-        // Load nutrition goals data
-        if (profile.nutrition_goals) {
-          const goals = profile.nutrition_goals as any;
-          setChildMode(goals.child_mode || false);
+        if (profile) {
+          setFirstName(profile.first_name || "");
+          setLastName(profile.last_name || "");
+          setAge(profile.age ? profile.age.toString() : "");
+          setHeight(profile.height_cm ? profile.height_cm.toString() : "");
+          setWeight(profile.weight_kg ? profile.weight_kg.toString() : "");
+          setBmi(profile.bmi || null);
+          setUserHealthConditions(profile.health_conditions || []); // Note: health_conditions not medical_conditions
+          setUserAllergies(profile.allergies || []);
+          setUserDietaryRestrictions(profile.dietary_restrictions || []);
+          setUserDietaryPreferences(profile.dietary_preferences || []);
+          setCustomHealthConditions(profile.custom_health_conditions || []);
+          setCustomAllergies(profile.custom_allergies || []);
+          setCustomDietaryPreferences(profile.custom_dietary_preferences || []);
+          setAgeGroup(profile.age_group || "");
+          setOnboardingCompleted(profile.onboarding_completed || true);
+          
+          // Load nutrition goals data
+          if (profile.nutrition_goals) {
+            const goals = profile.nutrition_goals as any;
+            setChildMode(goals.child_mode || false);
+          }
         }
+      } catch (error) {
+        console.error('Error loading profile:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load profile data.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error('Error loading profile:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load profile data.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    };
+
+    loadProfile();
+  }, [user.id, toast]);
 
   // Calculate BMI
   const calculateBMI = () => {

@@ -33,39 +33,39 @@ export function History({ onNavigate, user }: HistoryProps) {
   const { toast } = useToast();
 
   useEffect(() => {
-    loadScanHistory();
-  }, [user.id]);
+    const loadScanHistory = async () => {
+      try {
+        setIsLoading(true);
+        const history = await scanHistoryService.getUserScanHistory(user.id, 50);
+        const formattedHistory = history.map((scan: any) => ({
+          id: scan.id,
+          productName: scan.products?.name || "Unknown Product",
+          brand: scan.products?.brand || "Unknown Brand",
+          scannedAt: scan.scanned_at,
+          score: scan.products?.health_score || 0,
+          grade: scan.products?.grade || "N/A",
+          alerts: scan.products?.health_warnings?.length || 0,
+          image: scan.products?.image_url || "/placeholder.svg",
+          category: scan.products?.categories?.split(',')[0] || "Food",
+          productId: scan.product_id,
+          productData: scan.products
+        }));
+        setScanHistory(formattedHistory);
+        setFilteredHistory(formattedHistory);
+      } catch (error) {
+        console.error('Error loading scan history:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load scan history.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const loadScanHistory = async () => {
-    try {
-      setIsLoading(true);
-      const history = await scanHistoryService.getUserScanHistory(user.id, 50);
-      const formattedHistory = history.map((scan: any) => ({
-        id: scan.id,
-        productName: scan.products?.name || "Unknown Product",
-        brand: scan.products?.brand || "Unknown Brand",
-        scannedAt: scan.scanned_at,
-        score: scan.products?.health_score || 0,
-        grade: scan.products?.grade || "N/A",
-        alerts: scan.products?.health_warnings?.length || 0,
-        image: scan.products?.image_url || "/placeholder.svg",
-        category: scan.products?.categories?.split(',')[0] || "Food",
-        productId: scan.product_id,
-        productData: scan.products
-      }));
-      setScanHistory(formattedHistory);
-      setFilteredHistory(formattedHistory);
-    } catch (error) {
-      console.error('Error loading scan history:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load scan history.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    loadScanHistory();
+  }, [user.id, toast]);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);

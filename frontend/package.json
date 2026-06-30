@@ -13,10 +13,10 @@
     "preview": "vite preview",
     "backend:install": "cd backend && pip install -r requirements.txt",
     "backend:start": "cd backend && python main.py",
-    "dev:all": "concurrently \"npm run dev\" \"npm run backend:start\" --names \"frontend,backend\" --prefix-colors \"cyan,magenta\""
+    "dev:all": "concurrently \"npm run dev\" \"npm run backend:start\" --names \"frontend,backend\" --prefix-colors \"cyan,magenta\"",
+    "doctor": "npx react-doctor@latest"
   },
   "dependencies": {
-    "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
     "@radix-ui/react-aspect-ratio": "^1.1.7",
@@ -46,7 +46,6 @@
     "@radix-ui/react-tooltip": "^1.2.7",
     "@supabase/supabase-js": "^2.55.0",
     "@tanstack/react-query": "^5.83.0",
-    "@zxing/browser": "^0.1.5",
     "@zxing/library": "^0.21.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -70,8 +69,7 @@
     "sonner": "^1.7.4",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
-    "vaul": "^0.9.9",
-    "zod": "^3.25.76"
+    "vaul": "^0.9.9"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
@@ -89,7 +87,6 @@
     "globals": "^15.15.0",
     "lovable-tagger": "^1.1.9",
     "postcss": "^8.5.6",
-    "supabase": "^2.63.1",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0",

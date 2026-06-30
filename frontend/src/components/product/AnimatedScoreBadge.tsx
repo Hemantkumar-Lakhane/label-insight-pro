@@ -45,6 +45,7 @@ export function AnimatedScoreBadge({
       return;
     }
 
+    let animationFrameId: number;
     // Animate the score counter
     const duration = 1500;
     const startTime = Date.now();
@@ -60,11 +61,17 @@ export function AnimatedScoreBadge({
       setStrokeDashoffset(100 - (percentage * easeOutCubic));
       
       if (progress < 1) {
-        requestAnimationFrame(animateScore);
+        animationFrameId = requestAnimationFrame(animateScore);
       }
     };
 
-    requestAnimationFrame(animateScore);
+    animationFrameId = requestAnimationFrame(animateScore);
+
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
   }, [score, percentage, showAnimation]);
 
   return (

@@ -19,15 +19,7 @@ interface HealthChatbotProps {
 }
 
 export function HealthChatbot({ userProfile, productData, className }: HealthChatbotProps) {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [inputMessage, setInputMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([]);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast();
-
-  useEffect(() => {
-    // Initialize with welcome message and suggested questions
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
     const welcomeMessage: ChatMessage = {
       role: 'assistant',
       content: productData
@@ -35,10 +27,13 @@ export function HealthChatbot({ userProfile, productData, className }: HealthCha
         : `Hi! I'm your personal nutrition advisor. I can provide personalized health and nutrition guidance. How can I help you today?`,
       timestamp: new Date()
     };
-
-    setMessages([welcomeMessage]);
-    setSuggestedQuestions(aiChatService.getSuggestedQuestions(productData));
-  }, [productData]);
+    return [welcomeMessage];
+  });
+  const [inputMessage, setInputMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const suggestedQuestions = aiChatService.getSuggestedQuestions(productData);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     // Auto-scroll to bottom when new messages are added
