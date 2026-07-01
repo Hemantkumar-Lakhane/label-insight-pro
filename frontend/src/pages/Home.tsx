@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { MobileHeader } from "@/components/layout/MobileHeader";
 import { ProductCard } from "@/components/product/ProductCard";
 import { Button } from "@/components/ui/button";
