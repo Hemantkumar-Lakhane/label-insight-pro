@@ -119,7 +119,7 @@ label-insight-pro/
 ### 2. Frontend Installation & Startup
 ```bash
 # Clone the repository
-git clone https://github.com/DevBolt07/label-insight-pro.git
+git clone https://github.com/Hemantkumar-Lakhane/label-insight-pro.git
 cd label-insight-pro
 
 # Install monorepo orchestrator tools at root
@@ -161,6 +161,33 @@ You can start both frontend and backend dev servers with a single command from t
 ```bash
 npm run dev:all
 ```
+
+---
+
+## 🌐 Production Deployment
+
+The stack is designed to be split-deployed for optimal performance, cost, and ML binary capability:
+
+### 1. React Frontend (Vercel)
+The React SPA is deployed on **Vercel** as a static site:
+- **Build Directory Settings**: Set the **Root Directory** to `frontend`. The framework preset should auto-detect as `Vite` (`npm run build` and `dist` output folder).
+- **Client-Side Routing**: The [vercel.json](file:///c:/Users/lakha/food_label_analysis/label-insight-pro/frontend/vercel.json) file redirects all paths to `index.html` to prevent 404s on route refreshes.
+- **Environment Variables**:
+  - `VITE_SUPABASE_URL`: Your Supabase Web URL.
+  - `VITE_SUPABASE_ANON_KEY`: Your Supabase anonymous API key.
+  - `VITE_BACKEND_URL`: Set to your deployed Render URL (see below).
+
+### 2. Python FastAPI Backend (Render)
+The FastAPI OCR engine is deployed on **Render** using a custom **Docker** environment:
+- **Build Settings**: 
+  - **Runtime**: `Docker`
+  - **Root Directory**: `backend`
+  - **Dockerfile Path**: `Dockerfile`
+  - **Docker Build Context Directory**: `.`
+  - **Health Check Path**: `/`
+- **Environment Variables**:
+  - `SUPABASE_URL`: Your Supabase Web URL.
+  - `SUPABASE_ANON_KEY`: Your Supabase anonymous API key.
 
 ---
 
