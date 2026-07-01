@@ -128,7 +128,7 @@ const App = () => {
   };
 
   // Show loading spinner while checking authentication
-  if (loading || onboardingCompleted === null) {
+  if (loading || (user && onboardingCompleted === null)) {
     return (
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
